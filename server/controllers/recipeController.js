@@ -78,56 +78,9 @@ exports.exploreRecipe = async (req, res) => {
   }
 };
 
-/**
- * POST /search
- * Search
- */
-exports.searchRecipe = async (req, res) => {
-  try {
-    let searchTerm = req.body.searchTerm;
-    let recipe = await Recipe.find({
-      $text: { $search: searchTerm, $diacriticSensitive: true },
-    });
-    res.render("search", { title: "Cooking Blog - Search", recipe });
-  } catch (error) {
-    res.status(500).send({ message: error.message || "Error Occured" });
-  }
-};
 
-/**
- * GET /explore-latest
- * Explplore Latest
- */
-exports.exploreLatest = async (req, res) => {
-  try {
-    const limitNumber = 20;
-    const recipe = await Recipe.find({}).sort({ _id: -1 }).limit(limitNumber);
-    res.render("explore-latest", {
-      title: "Cooking Blog - Explore Latest",
-      recipe,
-    });
-  } catch (error) {
-    res.status(500).send({ message: error.message || "Error Occured" });
-  }
-};
 
-/**
- * GET /explore-random
- * Explore Random as JSON
- */
-exports.exploreRandom = async (req, res) => {
-  try {
-    let count = await Recipe.find().countDocuments();
-    let random = Math.floor(Math.random() * count);
-    let recipe = await Recipe.findOne().skip(random).exec();
-    res.render("explore-random", {
-      title: "Cooking Blog - Explore Latest",
-      recipe,
-    });
-  } catch (error) {
-    res.status(500).send({ message: error.message || "Error Occured" });
-  }
-};
+
 
 /**
  * GET /submit-recipe
@@ -187,7 +140,7 @@ exports.submitRecipeOnPost = async (req, res) => {
   }
 };
 
-// Server code
+
 
 // Route for deleting a recipe
 exports.DeleteRecipeOnPost = async (req, res) => {
@@ -239,6 +192,31 @@ exports.EditRecipeOnPost = async (req, res) => {
     }
 
     const id = req.params.id;
+
+    // added code
+
+    let imageUploadFile;
+    let uploadPath;
+    let newImageName;
+
+    if (req.files && req.files.image) {
+      // If a new image is uploaded, handle the image update
+      imageUploadFile = req.files.image;
+      newImageName = Date.now() + imageUploadFile.name;
+
+      uploadPath =
+        require("path").resolve("./") + "/public/uploads/" + newImageName;
+
+      imageUploadFile.mv(uploadPath, function (err) {
+        if (err) return res.status(500).send(err);
+      });
+
+      // Update the image field in the recipe
+      req.body.image = newImageName;
+    }
+
+    // added code
+
     const updatedRecipe = await Recipe.findByIdAndUpdate(id, req.body, {
       useFindAndModify: false,
     });
@@ -256,152 +234,99 @@ exports.EditRecipeOnPost = async (req, res) => {
   }
 };
 
-// exports.EditRecipeOnPost = async (req, res) => {
+// async function insertDummyCategoryData() {
 //   try {
-//     if (!req.body) {
-//       return res
-//         .status(400)
-//         .send({ message: "Data to update cannot be empty" });
-//     }
+//     const dummyCategories = [
+//       {
+//         name: "Thai",
+//         image: "thai-food.jpg",
+//       },
+//       {
+//         name: "American",
+//         image: "american-food.jpg",
+//       },
+//       {
+//         name: "Chinese",
+//         image: "chinese-food.jpg",
+//       },
+//       {
+//         name: "Mexican",
+//         image: "mexican-food.jpg",
+//       },
+//       {
+//         name: "Indian",
+//         image: "indian-food.jpg",
+//       },
+//       {
+//         name: "Spanish",
+//         image: "spanish-food.jpg",
+//       },
+//     ];
 
-//     const id = req.params.id;
-//     const updatedRecipe = await Recipe.findByIdAndUpdate(id, req.body, {
-//       useFindAndModify: false,
-//     });
+//     await Category.insertMany(dummyCategories);
 
-//     res.redirect("/recipes"); // Redirect to the recipes page or any other appropriate page
-
-//     if (!updatedRecipe) {
-//       return res.status(404).send({
-//         message: `Cannot update recipe with id ${id}. Maybe the recipe was not found.`,
-//       });
-//     }
-
-//     res.send(updatedRecipe);
-//   } catch (err) {
-//     res.status(500).send({ message: "Error updating recipe information" });
-//   }
-// };
-// exports.EditRecipeOnPost = async (req, res) => {
-//   const recipeId = req.params.id; // Get the recipe ID from the request params
-
-//   try {
-//     // Find the recipe by its ID
-//     const recipe = await Recipe.findById(recipeId);
-
-//     // Update the recipe fields with the new values from the form
-//     recipe.email = req.body.email;
-//     recipe.name = req.body.name;
-//     recipe.description = req.body.description;
-//     recipe.category = req.body.category;
-
-//     // Check if a new image file is uploaded
-//     if (req.file) {
-//       recipe.image = req.file.filename; // Update the image field with the new filename
-//     }
-
-//     // Save the updated recipe
-//     await recipe.save();
-
-//     res.redirect("/recipes"); // Redirect to the recipes page or any other appropriate page
+//     console.log("Dummy category data inserted successfully.");
 //   } catch (error) {
-//     console.error("Error updating recipe:", error);
-//     res.redirect("/error"); // Redirect to an error page or handle the error in a suitable way
-//   }
-// };
-
-// Delete Recipe
-// async function deleteRecipe(){
-//   try {
-//     await Recipe.deleteOne({ name: 'New Recipe From Form' });
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
-// deleteRecipe();
-
-// Update Recipe
-// async function updateRecipe(){
-//   try {
-//     const res = await Recipe.updateOne({ name: 'New Recipe' }, { name: 'New Recipe Updated' });
-//     res.n; // Number of documents matched
-//     res.nModified; // Number of documents modified
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
-// updateRecipe();
-
-/**
- * Dummy Data Example
- */
-
-// async function insertDymmyCategoryData(){
-//   try {
-//     await Category.insertMany([
-//       {
-//         "name": "Thai",
-//         "image": "thai-food.jpg"
-//       },
-//       {
-//         "name": "American",
-//         "image": "american-food.jpg"
-//       },
-//       {
-//         "name": "Chinese",
-//         "image": "chinese-food.jpg"
-//       },
-//       {
-//         "name": "Mexican",
-//         "image": "mexican-food.jpg"
-//       },
-//       {
-//         "name": "Indian",
-//         "image": "indian-food.jpg"
-//       },
-//       {
-//         "name": "Spanish",
-//         "image": "spanish-food.jpg"
-//       }
-//     ]);
-//   } catch (error) {
-//     console.log('err', + error)
+//     console.log("Error inserting dummy category data:", error);
 //   }
 // }
 
-// insertDymmyCategoryData();
+// insertDummyCategoryData();
 
-// async function insertDymmyRecipeData(){
+// async function insertDummyRecipeData() {
 //   try {
 //     await Recipe.insertMany([
 //       {
-//         "name": "Recipe Name Goes Here",
-//         "description": `Recipe Description Goes Here`,
-//         "email": "recipeemail@raddy.co.uk",
-//         "ingredients": [
-//           "1 level teaspoon baking powder",
-//           "1 level teaspoon cayenne pepper",
-//           "1 level teaspoon hot smoked paprika",
+//         name: "Butter Chicken",
+//         description:
+//           "Butter Chicken is a classic Indian chicken dish cooked in a creamy tomato-based sauce. The chicken is marinated in a flavorful blend of spices, yogurt, and lemon juice, then cooked in a rich and buttery gravy. It's a popular and delicious choice for Indian food lovers.",
+//         email: "butterchicken@gmail.com",
+//         ingredients: [
+//           "500g boneless chicken, cut into pieces",
+//           "1 cup plain yogurt",
+//           "2 tablespoons butter",
+//           "1 tablespoon vegetable oil",
+//           "1 onion, finely chopped",
+//           "2 cloves garlic, minced",
+//           "1-inch ginger, grated",
+//           "1 teaspoon cumin powder",
+//           "1 teaspoon coriander powder",
+//           "1 teaspoon turmeric powder",
+//           "1 teaspoon garam masala",
+//           "1 cup tomato puree",
+//           "1/2 cup heavy cream",
+//           "Salt to taste",
+//           "Fresh coriander leaves for garnish",
 //         ],
-//         "category": "American",
-//         "image": "southern-friend-chicken.jpg"
+//         category: "Indian",
+//         image: "i1-butter.jpeg",
 //       },
 //       {
-//         "name": "Recipe Name Goes Here",
-//         "description": `Recipe Description Goes Here`,
-//         "email": "recipeemail@raddy.co.uk",
-//         "ingredients": [
-//           "1 level teaspoon baking powder",
-//           "1 level teaspoon cayenne pepper",
-//           "1 level teaspoon hot smoked paprika",
+//         name: "Rajma Chawal",
+//         description:
+//           "Rajma Chawal is a popular North Indian dish consisting of red kidney beans cooked in a thick tomato-based gravy, served with steamed basmati rice. It's a comforting and wholesome meal that is loved by people of all ages. The combination of tender kidney beans, aromatic spices, and fluffy rice makes it a delicious and satisfying option.",
+//         email: "rajmachawal@gmail.com",
+//         ingredients: [
+//           "1 cup dried red kidney beans (rajma), soaked overnight",
+//           "2 tablespoons ghee or oil",
+//           "1 onion, finely chopped",
+//           "2 tomatoes, pureed",
+//           "2 teaspoons ginger-garlic paste",
+//           "1 teaspoon cumin seeds",
+//           "1 teaspoon turmeric powder",
+//           "1 teaspoon red chili powder",
+//           "1 teaspoon garam masala",
+//           "Salt to taste",
+//           "Fresh coriander leaves for garnish",
+//           "2 cups cooked basmati rice",
 //         ],
-//         "category": "American",
-//         "image": "southern-friend-chicken.jpg"
+//         category: "Indian",
+//         image: "i2-rajma.jpeg",
 //       },
 //     ]);
 //   } catch (error) {
-//     console.log('err', + error)
+//     console.log("Error: " + error);
 //   }
 // }
 
-// insertDymmyRecipeData();
+// insertDummyRecipeData();
