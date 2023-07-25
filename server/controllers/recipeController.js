@@ -2,6 +2,8 @@ require("../models/database");
 const Category = require("../models/Category");
 const Recipe = require("../models/Recipe");
 
+
+
 /**
  * GET /
  * Homepage
@@ -21,7 +23,12 @@ exports.homepage = async (req, res) => {
 
     const food = { latest, thai, american, chinese };
 
-    res.render("index", { title: "Cooking Blog - Home", categories, food });
+    res.render("index", {
+      title: "Cooking Blog - Home",
+      categories,
+      food,
+      displayName: req.user ? req.user.displayName : "",
+    });
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occured" });
   }
@@ -38,6 +45,7 @@ exports.exploreCategories = async (req, res) => {
     res.render("categories", {
       title: "Cooking Blog - Categoreis",
       categories,
+      displayName: req.user ? req.user.displayName : "",
     });
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occured" });
@@ -58,6 +66,7 @@ exports.exploreCategoriesById = async (req, res) => {
     res.render("categories", {
       title: "Cooking Blog - Categoreis",
       categoryById,
+      displayName: req.user ? req.user.displayName : "",
     });
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occured" });
@@ -72,15 +81,15 @@ exports.exploreRecipe = async (req, res) => {
   try {
     let recipeId = req.params.id;
     const recipe = await Recipe.findById(recipeId);
-    res.render("recipe", { title: "Cooking Blog - Recipe", recipe });
+    res.render("recipe", {
+      title: "Cooking Blog - Recipe",
+      recipe,
+      displayName: req.user ? req.user.displayName : "",
+    });
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occured" });
   }
 };
-
-
-
-
 
 /**
  * GET /submit-recipe
@@ -93,6 +102,7 @@ exports.submitRecipe = async (req, res) => {
     title: "Cooking Blog - Submit Recipe",
     infoErrorsObj,
     infoSubmitObj,
+    displayName: req.user ? req.user.displayName : "",
   });
 };
 
@@ -140,8 +150,6 @@ exports.submitRecipeOnPost = async (req, res) => {
   }
 };
 
-
-
 // Route for deleting a recipe
 exports.DeleteRecipeOnPost = async (req, res) => {
   try {
@@ -169,7 +177,6 @@ exports.DeleteRecipeOnPost = async (req, res) => {
 exports.EditRecipe = async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
-
     const infoErrorsObj = req.flash("infoErrors");
     const infoSubmitObj = req.flash("infoSubmit");
     res.render("edit", {
@@ -177,6 +184,7 @@ exports.EditRecipe = async (req, res) => {
       infoErrorsObj,
       infoSubmitObj,
       recipe,
+      displayName: req.user ? req.user.displayName : "",
     });
   } catch (error) {
     return res.redirect("/");
