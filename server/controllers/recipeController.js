@@ -22,7 +22,7 @@ exports.homepage = async (req, res) => {
     const food = { latest, thai, american, chinese };
 
     res.render("index", {
-      title: "Cooking Blog - Home",
+      title: "Yummy Recipes - Home",
       categories,
       food,
       displayName: req.user ? req.user.displayName : "",
@@ -41,7 +41,7 @@ exports.exploreCategories = async (req, res) => {
     const limitNumber = 20;
     const categories = await Category.find({}).limit(limitNumber);
     res.render("categories", {
-      title: "Cooking Blog - Categoreis",
+      title: "Yummy Recipes - Categoreis",
       categories,
       displayName: req.user ? req.user.displayName : "",
     });
@@ -62,7 +62,7 @@ exports.exploreCategoriesById = async (req, res) => {
       limitNumber
     );
     res.render("categories", {
-      title: "Cooking Blog - Categoreis",
+      title: "Yummy Recipes - Categoreis",
       categoryById,
       displayName: req.user ? req.user.displayName : "",
     });
@@ -80,7 +80,7 @@ exports.exploreRecipe = async (req, res) => {
     let recipeId = req.params.id;
     const recipe = await Recipe.findById(recipeId);
     res.render("recipe", {
-      title: "Cooking Blog - Recipe",
+      title: "Yummy Recipes - Recipe",
       recipe,
       displayName: req.user ? req.user.displayName : "",
     });
@@ -99,7 +99,7 @@ exports.searchRecipe = async (req, res) => {
     let recipe = await Recipe.find({
       $text: { $search: searchTerm, $diacriticSensitive: true },
     });
-    res.render("search", { title: "Cooking Blog - Search", recipe });
+    res.render("search", { title: "Yummy Recipes - Search", recipe });
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occured" });
   }
@@ -114,7 +114,7 @@ exports.exploreLatest = async (req, res) => {
     const limitNumber = 20;
     const recipe = await Recipe.find({}).sort({ _id: -1 }).limit(limitNumber);
     res.render("explore-latest", {
-      title: "Cooking Blog - Explore Latest",
+      title: "Yummy Recipes - Explore Latest",
       recipe,
     });
   } catch (error) {
@@ -132,7 +132,7 @@ exports.exploreRandom = async (req, res) => {
     let random = Math.floor(Math.random() * count);
     let recipe = await Recipe.findOne().skip(random).exec();
     res.render("explore-random", {
-      title: "Cooking Blog - Explore Latest",
+      title: "Yummy Recipes - Explore Latest",
       recipe,
     });
   } catch (error) {
@@ -148,11 +148,42 @@ exports.submitRecipe = async (req, res) => {
   const infoErrorsObj = req.flash("infoErrors");
   const infoSubmitObj = req.flash("infoSubmit");
   res.render("submit-recipe", {
-    title: "Cooking Blog - Submit Recipe",
+    title: "Yummy Recipes - Submit Recipe",
     infoErrorsObj,
     infoSubmitObj,
     displayName: req.user ? req.user.displayName : "",
   });
+};
+
+exports.aboutus = async (req, res) => {
+  res.render("aboutus", {
+    title: "Yummy Recipes - About Us",
+    displayName: req.user ? req.user.displayName : "",
+  });
+};
+
+exports.contact = async (req, res) => {
+  res.render("contact", {
+    title: "Yummy Recipes - Contact Us",
+    displayName: req.user ? req.user.displayName : "",
+  });
+};
+
+exports.contactOnPost = async (req, res) => {
+  const { name, email, subject, message } = req.body;
+
+  // Replace this with your preferred way of handling the user's message
+  // For demonstration purposes, we will just log the message to the console
+  console.log(`New message from ${name} (${email}):
+    Subject: ${subject}
+    Message: ${message}`);
+
+  // Show an alert to the user that the message has been received
+  // You can use the alert() function if the form is submitted via AJAX, or use a JavaScript alert library like SweetAlert
+  // For demonstration, we'll use the alert() function here
+  res.send(
+    '<script>alert("Your message has been received. We will get back to you shortly."); window.location.href = "/";</script>'
+  );
 };
 
 /**
