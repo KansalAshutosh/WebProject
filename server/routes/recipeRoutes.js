@@ -22,6 +22,9 @@ router.get("/categories/:id", recipeController.exploreCategoriesById);
 router.post("/search", recipeController.searchRecipe);
 router.get("/explore-latest", recipeController.exploreLatest);
 router.get("/explore-random", recipeController.exploreRandom);
+router.get("/aboutus", recipeController.aboutus);
+router.get("/contact", recipeController.contact);
+router.post("/contact", recipeController.contactOnPost);
 
 router.get("/submit-recipe", requireAuth, recipeController.submitRecipe);
 router.post("/submit-recipe", requireAuth, recipeController.submitRecipeOnPost);
